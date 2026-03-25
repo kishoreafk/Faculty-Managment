@@ -60,7 +60,7 @@ export const approveFaculty = async (req: AuthRequest, res: Response) => {
     await connection.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, payload, ip_address)
        VALUES (?, 'FACULTY_APPROVE', 'faculty', ?, ?, ?)`,
-      [req.user!.id, id, JSON.stringify({ approved: true, role_id }), req.ip]
+      [req.user!.id, id, JSON.stringify({ approved: true, role_id }), (req.ip || null)]
     );
     
     await connection.commit();
@@ -101,7 +101,7 @@ export const rejectFaculty = async (req: AuthRequest, res: Response) => {
     await connection.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, payload, reason, ip_address)
        VALUES (?, 'FACULTY_REJECT', 'faculty', ?, ?, ?, ?)`,
-      [req.user!.id, id, JSON.stringify({ approved: false }), reason || 'Registration rejected', req.ip]
+      [req.user!.id, id, JSON.stringify({ approved: false }), reason || 'Registration rejected', (req.ip || null)]
     );
     
     await connection.commit();

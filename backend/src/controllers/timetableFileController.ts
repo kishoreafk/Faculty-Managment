@@ -68,7 +68,7 @@ export const uploadTimetable = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO timetable_access_logs (file_id, action, performed_by, ip_address, user_agent) 
        VALUES (?, 'UPLOAD', ?, ?, ?)`,
-      [result.insertId, facultyId, req.ip, req.get('user-agent')]
+      [result.insertId, facultyId, (req.ip || null), (req.get('user-agent') || null)]
     );
 
     res.json({ 
@@ -172,7 +172,7 @@ export const downloadTimetable = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO timetable_access_logs (file_id, action, performed_by, ip_address, user_agent) 
        VALUES (?, 'DOWNLOAD', ?, ?, ?)`,
-      [id, userId, req.ip, req.get('user-agent')]
+      [id, userId, (req.ip || null), (req.get('user-agent') || null)]
     );
 
     res.setHeader('Content-Type', file.mime_type);
@@ -229,7 +229,7 @@ export const previewTimetable = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO timetable_access_logs (file_id, action, performed_by, ip_address, user_agent) 
        VALUES (?, 'VIEW', ?, ?, ?)`,
-      [id, userId, req.ip, req.get('user-agent')]
+      [id, userId, (req.ip || null), (req.get('user-agent') || null)]
     );
 
     res.setHeader('Content-Type', file.mime_type);
@@ -308,7 +308,7 @@ export const assignTimetable = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO timetable_access_logs (file_id, action, performed_by, ip_address, user_agent, note) 
        VALUES (?, 'ASSIGN', ?, ?, ?, ?)`,
-      [fileId, adminId, req.ip, req.get('user-agent'), `Assigned to faculty ID ${facultyId}`]
+      [fileId, adminId, (req.ip || null), (req.get('user-agent') || null), `Assigned to faculty ID ${facultyId}`]
     );
 
     await pool.execute(
@@ -352,7 +352,7 @@ export const unassignTimetable = async (req: AuthRequest, res: Response) => {
       await pool.execute(
         `INSERT INTO timetable_access_logs (file_id, action, performed_by, ip_address, user_agent, note) 
          VALUES (?, 'UNASSIGN', ?, ?, ?, ?)`,
-        [fileId, adminId, req.ip, req.get('user-agent'), `Unassigned from faculty ID ${facultyId}`]
+        [fileId, adminId, (req.ip || null), (req.get('user-agent') || null), `Unassigned from faculty ID ${facultyId}`]
       );
 
       await logAdminActionFromReq(req, {
@@ -398,7 +398,7 @@ export const deleteTimetableFile = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO timetable_access_logs (file_id, action, performed_by, ip_address, user_agent) 
        VALUES (?, 'DELETE', ?, ?, ?)`,
-      [id, userId, req.ip, req.get('user-agent')]
+      [id, userId, (req.ip || null), (req.get('user-agent') || null)]
     );
 
     await pool.execute(

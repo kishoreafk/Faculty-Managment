@@ -108,7 +108,7 @@ export const reviewProductRequest = async (req: AuthRequest, res: Response) => {
         action === 'APPROVED' ? 'PRODUCT_APPROVE' : 'PRODUCT_REJECT',
         id,
         JSON.stringify({ before: { status: 'PENDING' }, after: { status: action }, reason }),
-        req.ip
+        (req.ip || null)
       ]
     );
 

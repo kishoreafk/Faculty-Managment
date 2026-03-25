@@ -64,7 +64,7 @@ export const uploadFile = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO vault_access_logs (file_id, action, performed_by, ip_address, user_agent) 
        VALUES (?, 'UPLOAD', ?, ?, ?)`,
-      [result.insertId, facultyId, req.ip, req.get('user-agent')]
+      [result.insertId, facultyId, (req.ip || null), (req.get('user-agent') || null)]
     );
 
     res.json({ 
@@ -188,7 +188,7 @@ export const downloadFile = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO vault_access_logs (file_id, action, performed_by, ip_address, user_agent) 
        VALUES (?, 'DOWNLOAD', ?, ?, ?)`,
-      [id, userId, req.ip, req.get('user-agent')]
+      [id, userId, (req.ip || null), (req.get('user-agent') || null)]
     );
 
     res.setHeader('Content-Type', file.mime_type);
@@ -250,7 +250,7 @@ export const previewFile = async (req: AuthRequest, res: Response) => {
       await pool.execute(
         `INSERT INTO vault_access_logs (file_id, action, performed_by, ip_address, user_agent) 
          VALUES (?, 'VIEW', ?, ?, ?)`,
-        [id, userId, req.ip, req.get('user-agent')]
+        [id, userId, (req.ip || null), (req.get('user-agent') || null)]
       );
     }
 
@@ -304,7 +304,7 @@ export const deleteFile = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO vault_access_logs (file_id, action, performed_by, ip_address, user_agent) 
        VALUES (?, 'DELETE', ?, ?, ?)`,
-      [id, userId, req.ip, req.get('user-agent')]
+      [id, userId, (req.ip || null), (req.get('user-agent') || null)]
     );
 
     await pool.execute(

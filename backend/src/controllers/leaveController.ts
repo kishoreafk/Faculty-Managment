@@ -163,7 +163,7 @@ export const updateLeaveStatus = async (req: AuthRequest, res: Response) => {
         status === 'APPROVED' ? 'LEAVE_APPROVE' : 'LEAVE_REJECT',
         id,
         JSON.stringify({ before: { status: 'PENDING' }, after: { status }, reason }),
-        req.ip
+        (req.ip || null)
       ]
     );
     
@@ -268,7 +268,7 @@ export const triggerMonthlyAccrual = async (req: AuthRequest, res: Response) => 
     await pool.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, reason, ip_address)
        VALUES (?, 'TRIGGER_MONTHLY_ACCRUAL', 'leave_system', ?, ?)`,
-      [req.user!.id, 'Manual trigger of monthly leave accrual process', req.ip]
+      [req.user!.id, 'Manual trigger of monthly leave accrual process', (req.ip || null)]
     );
 
     res.json({ message: 'Monthly leave accrual completed successfully' });
@@ -288,7 +288,7 @@ export const triggerYearlyAccrual = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, reason, ip_address)
        VALUES (?, 'TRIGGER_YEARLY_ACCRUAL', 'leave_system', ?, ?)`,
-      [req.user!.id, 'Manual trigger of yearly leave accrual process', req.ip]
+      [req.user!.id, 'Manual trigger of yearly leave accrual process', (req.ip || null)]
     );
 
     res.json({ message: 'Yearly leave accrual completed successfully' });
@@ -308,7 +308,7 @@ export const triggerCarryForward = async (req: AuthRequest, res: Response) => {
     await pool.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, reason, ip_address)
        VALUES (?, 'TRIGGER_CARRY_FORWARD', 'leave_system', ?, ?)`,
-      [req.user!.id, 'Manual trigger of leave carry forward process', req.ip]
+      [req.user!.id, 'Manual trigger of leave carry forward process', (req.ip || null)]
     );
 
     res.json({ message: 'Leave carry forward completed successfully' });
@@ -330,7 +330,7 @@ export const getAlternateFaculty = async (req: AuthRequest, res: Response) => {
          AND f.id != ?
          ${department ? 'AND f.department = ?' : ''}
        ORDER BY f.department, f.name`,
-      department ? [req.user!.id, department] : [req.user!.id]
+      department ? [req.user!.id, department as string] : [req.user!.id]
     );
     
     res.json(rows);

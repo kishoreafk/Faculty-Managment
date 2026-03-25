@@ -158,7 +158,7 @@ export const createUser = async (req: AuthRequest, res: Response) => {
     await connection.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, after_state, ip_address)
        VALUES (?, 'CREATE_USER', 'faculty', ?, ?, ?)`,
-      [req.user!.id, newUserId, JSON.stringify({ email, role }), req.ip]
+      [req.user!.id, newUserId, JSON.stringify({ email, role }), (req.ip || null)]
     );
     
     await connection.commit();
@@ -219,7 +219,7 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, before_state, after_state, ip_address)
        VALUES (?, 'UPDATE_USER', 'faculty', ?, ?, ?, ?)`,
       [req.user!.id, id, JSON.stringify({ department: oldData[0].department, designation: oldData[0].designation }), 
-       JSON.stringify({ department, designation }), req.ip]
+       JSON.stringify({ department, designation }), (req.ip || null)]
     );
     
     await connection.commit();
@@ -266,7 +266,7 @@ export const updateCredentials = async (req: AuthRequest, res: Response) => {
     await connection.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, reason, ip_address)
        VALUES (?, 'CHANGE_CREDENTIALS', 'faculty', ?, ?, ?)`,
-      [req.user!.id, id, reason || 'Password reset by admin', req.ip]
+      [req.user!.id, id, reason || 'Password reset by admin', (req.ip || null)]
     );
     
     await connection.commit();
@@ -301,7 +301,7 @@ export const deleteUser = async (req: AuthRequest, res: Response) => {
     await connection.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, before_state, after_state, reason, ip_address)
        VALUES (?, 'DELETE_USER', 'faculty', ?, ?, ?, ?, ?)`,
-      [req.user!.id, id, JSON.stringify({ deleted: false }), JSON.stringify({ deleted: true }), reason || 'Deleted by admin', req.ip]
+      [req.user!.id, id, JSON.stringify({ deleted: false }), JSON.stringify({ deleted: true }), reason || 'Deleted by admin', (req.ip || null)]
     );
 
     await connection.commit();
@@ -336,7 +336,7 @@ export const restoreUser = async (req: AuthRequest, res: Response) => {
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, before_state, after_state, ip_address)
        VALUES (?, 'RESTORE_USER', 'faculty', ?, ?, ?, ?)`,
       [req.user!.id, id, JSON.stringify({ deleted: true, name: oldData[0].name, email: oldData[0].email }),
-       JSON.stringify({ deleted: false }), req.ip]
+       JSON.stringify({ deleted: false }), (req.ip || null)]
     );
 
     await connection.commit();
@@ -372,7 +372,7 @@ export const promoteUser = async (req: AuthRequest, res: Response) => {
     await connection.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, before_state, after_state, ip_address)
        VALUES (?, 'PROMOTE_USER', 'faculty', ?, ?, ?, ?)`,
-      [req.user!.id, id, JSON.stringify({ role_id: oldData[0].role_id }), JSON.stringify({ role_id: roleResult[0].id }), req.ip]
+      [req.user!.id, id, JSON.stringify({ role_id: oldData[0].role_id }), JSON.stringify({ role_id: roleResult[0].id }), (req.ip || null)]
     );
     
     await connection.commit();
@@ -404,7 +404,7 @@ export const forceLogout = async (req: AuthRequest, res: Response) => {
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, payload, reason, ip_address)
        VALUES (?, 'FORCE_LOGOUT', 'faculty', ?, ?, ?, ?)`,
       [req.user!.id, id, JSON.stringify({ sessions_revoked: tokenCount[0].count }),
-       `Force logout of user sessions`, req.ip]
+       `Force logout of user sessions`, (req.ip || null)]
     );
 
     await connection.commit();
@@ -445,7 +445,7 @@ export const bulkDelete = async (req: AuthRequest, res: Response) => {
           `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, before_state, after_state, reason, ip_address)
            VALUES (?, 'BULK_DELETE_USER', 'faculty', ?, ?, ?, ?, ?)`,
           [req.user!.id, id, JSON.stringify({ deleted: false, name: userData?.name, email: userData?.email }),
-           JSON.stringify({ deleted: true }), reason || 'Bulk delete', req.ip]
+           JSON.stringify({ deleted: true }), reason || 'Bulk delete', (req.ip || null)]
         );
 
         if (userData) deletedUsers.push(userData);
@@ -523,7 +523,7 @@ export const reviewLeave = async (req: AuthRequest, res: Response) => {
     await connection.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, after_state, reason, ip_address)
        VALUES (?, ?, 'leave_application', ?, ?, ?, ?)`,
-      [req.user!.id, action === 'APPROVED' ? 'LEAVE_APPROVE' : 'LEAVE_REJECT', id, JSON.stringify({ status: action }), reason, req.ip]
+      [req.user!.id, action === 'APPROVED' ? 'LEAVE_APPROVE' : 'LEAVE_REJECT', id, JSON.stringify({ status: action }), reason, (req.ip || null)]
     );
     
     await connection.commit();
@@ -553,7 +553,7 @@ export const reviewProduct = async (req: AuthRequest, res: Response) => {
     await connection.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, after_state, reason, ip_address)
        VALUES (?, ?, 'product_request', ?, ?, ?, ?)`,
-      [req.user!.id, action === 'APPROVED' ? 'PRODUCT_APPROVE' : 'PRODUCT_REJECT', id, JSON.stringify({ status: action }), reason, req.ip]
+      [req.user!.id, action === 'APPROVED' ? 'PRODUCT_APPROVE' : 'PRODUCT_REJECT', id, JSON.stringify({ status: action }), reason, (req.ip || null)]
     );
     
     await connection.commit();
@@ -591,7 +591,7 @@ export const approveUser = async (req: AuthRequest, res: Response) => {
     await connection.execute(
       `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, after_state, ip_address)
        VALUES (?, 'APPROVE_USER', 'faculty', ?, ?, ?)`,
-      [req.user!.id, id, JSON.stringify({ approved: true }), req.ip]
+      [req.user!.id, id, JSON.stringify({ approved: true }), (req.ip || null)]
     );
     
     await connection.commit();
@@ -720,7 +720,7 @@ export const bulkApprove = async (req: AuthRequest, res: Response) => {
           await connection.execute(
             `INSERT INTO admin_logs (admin_id, action_type, resource_type, resource_id, after_state, ip_address)
              VALUES (?, 'BULK_APPROVE_USER', 'faculty', ?, ?, ?)`,
-            [req.user!.id, id, JSON.stringify({ approved: true }), req.ip]
+            [req.user!.id, id, JSON.stringify({ approved: true }), (req.ip || null)]
           );
 
           const email = users[0].email as string | null | undefined;
