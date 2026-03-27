@@ -25,7 +25,7 @@ services:
       dockerfile: backend/Dockerfile
     restart: always
     ports:
-      - "5000:5000"
+      - "${APP_BACKEND_PORT:-5000}:5000"
     environment:
       - DB_HOST=db
       - DB_PORT=3306
@@ -46,9 +46,12 @@ services:
     build: 
       context: .
       dockerfile: frontend/Dockerfile
+      args:
+        # Pass backend proxy address during build so Vite proxy configs resolve safely if needed
+        - VITE_API_PROXY_TARGET=http://backend:5000
     restart: always
     ports:
-      - "3000:80"
+      - "${APP_FRONTEND_PORT:-3000}:80"
     depends_on:
       - backend
 
