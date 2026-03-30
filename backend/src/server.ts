@@ -1,20 +1,18 @@
+import './config/loadEnv.js';
 import express from 'express';
 import { testConnection, pool } from './config/database.js';
-import { validateEnvOnBoot } from './config/env.js';
+import { validateEnvOnBoot, requireEnv } from './config/env.js';
 import routes from './routes/index.js';
 import { initializeCronJobs } from './utils/cronJobs.js';
 import { initializeStorage } from './utils/initStorage.js';
 import { verifyTables } from './utils/verifyTables.js';
-import { loadEnv } from './config/loadEnv.js';
 import { isProduction } from './config/env.js';
 
-loadEnv();
-
-// Fail fast in production if critical env vars are missing.
+// Fail fast if critical env vars are missing.
 validateEnvOnBoot();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = Number(requireEnv('PORT'));
 app.use(express.json());
 
 // Auto-audit disabled - controllers handle their own logging
