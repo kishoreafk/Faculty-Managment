@@ -50,6 +50,7 @@ services:
     #   - "127.0.0.1:3306:3306"
 
   backend:
+    image: skishoreafk/faculty-management-backend:latest
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -121,6 +122,7 @@ services:
     user: "node:node"
 
   frontend:
+    image: skishoreafk/faculty-management-frontend:latest
     build:
       context: .
       dockerfile: frontend/Dockerfile
