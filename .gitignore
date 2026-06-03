@@ -52,7 +52,7 @@ backend/logs/
 nginx/certs/
 backups/
 *.sql.gz
-*.sql
+*.bak
 
 # -----------------------------------------------------------------------------
 # OS / editor scratch
