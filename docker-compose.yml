@@ -51,9 +51,6 @@ services:
 
   backend:
     image: skishoreafk/faculty-management-backend:latest
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
     container_name: faculty_backend
     restart: always
     # Only expose on localhost — the public-facing entry is the `nginx` service below.
@@ -123,9 +120,6 @@ services:
 
   frontend:
     image: skishoreafk/faculty-management-frontend:latest
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
     container_name: faculty_frontend
     restart: always
     expose:
