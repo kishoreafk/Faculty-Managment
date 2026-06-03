@@ -1,0 +1,181 @@
+services:
+  migration:
+    image: mysql:8.0
+    container_name: faculty_migration
+    restart: "no"
+    entrypoint: [""]
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      - DB_NAME=${DB_NAME:-faculty_management}
+    networks:
+      - faculty_net
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: sh /migrate.sh
+    volumes:
+      - ./database/schema.sql:/schema.sql:ro
+      - ./database/migrations:/migrations:ro
+      - ./database/migrate.sh:/migrate.sh:ro
+
+  mysql:
+    image: mysql:8.0
+    container_name: faculty_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: ${DB_NAME:-faculty_management}
+      MYSQL_USER: ${DB_USER:-faculty_app}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - faculty_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+    # Do NOT publish the MySQL port to the host in production. The backend
+    # talks to it over the internal `faculty_net` network. If you need to
+    # run a one-off admin tool from the host, use `docker exec`.
+    # Remove the lines below ONLY for a controlled local debugging session.
+    # ports:
+    #   - "127.0.0.1:3306:3306"
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: faculty_backend
+    restart: always
+    # Only expose on localhost — the public-facing entry is the `nginx` service below.
+    # Remove or change to expose to your reverse proxy network as needed.
+    expose:
+      - "5000"
+    env_file:
+      - .env
+    environment:
+      # Database Configuration
+      - DB_HOST=mysql
+      - DB_USER=${DB_USER:-faculty_app}
+      - DB_PASSWORD=${DB_PASSWORD:?DB_PASSWORD is required}
+      - DB_NAME=${DB_NAME:-faculty_management}
+      - DB_PORT=3306
+
+      # Server Configuration
+      - PORT=5000
+      # SECURITY: always run in production mode in the deployed compose file.
+      - NODE_ENV=production
+
+      # JWT Configuration — must be overridden in production `.env`
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET is required}
+      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1h}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
+
+      # Email Configuration (optional, but required in production to send mail)
+      - EMAIL_HOST=${EMAIL_HOST:-}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - EMAIL_SECURE=${EMAIL_SECURE:-false}
+      - EMAIL_USER=${EMAIL_USER:-}
+      - EMAIL_PASS=${EMAIL_PASS:-}
+      - EMAIL_FROM=${EMAIL_FROM:-}
+
+      # File Upload Configuration
+      - MAX_UPLOAD_MB=${MAX_UPLOAD_MB:-25}
+
+      # Bulk Import Configuration — must be overridden in production
+      - BULK_IMPORT_DEFAULT_PASSWORD=${BULK_IMPORT_DEFAULT_PASSWORD:?BULK_IMPORT_DEFAULT_PASSWORD is required}
+
+      # Trust X-Forwarded-* from nginx (the only ingress)
+      - TRUST_PROXY=1
+    volumes:
+      - backend_uploads:/app/backend/uploads
+      - backend_logs:/app/backend/logs
+    networks:
+      - faculty_net
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      # Backend reports healthy only if it can talk to the DB.
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1.5G
+    # Run as a non-root user. The backend Dockerfile creates and switches
+    # to the `node` user.
+    user: "node:node"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    container_name: faculty_frontend
+    restart: always
+    expose:
+      - "80"
+    depends_on:
+      - backend
+    networks:
+      - faculty_net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: faculty_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - faculty_net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--no-check-certificate", "-O-", "https://localhost/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+volumes:
+  mysql_data:
+    name: faculty_mysql_data
+  backend_uploads:
+    name: faculty_backend_uploads
+  backend_logs:
+    name: faculty_backend_logs
+  nginx_logs:
+    name: faculty_nginx_logs
+
+networks:
+  faculty_net:
+    name: faculty_net
+    driver: bridge

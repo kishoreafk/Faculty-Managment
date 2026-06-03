@@ -1,0 +1,92 @@
+# =============================================================================
+# .gitignore — Faculty Management System
+# =============================================================================
+# CRITICAL: this list is part of the production safety net. Anything that
+# could contain secrets, runtime data, or environment-specific state
+# must be ignored. Run `git status` after editing to verify.
+
+# -----------------------------------------------------------------------------
+# Environment / secrets — NEVER commit a real `.env`
+# -----------------------------------------------------------------------------
+.env
+
+
+# Secrets accidentally written to disk (e.g. by an editor backup)
+*.env
+*credentials*
+*secrets*
+*.pem
+*.key
+*.crt
+*.p12
+
+# -----------------------------------------------------------------------------
+# Dependencies
+# -----------------------------------------------------------------------------
+node_modules/
+**/node_modules/
+
+# -----------------------------------------------------------------------------
+# Build outputs
+# -----------------------------------------------------------------------------
+dist/
+build/
+**/dist/
+**/build/
+*.tsbuildinfo
+
+# -----------------------------------------------------------------------------
+# Local data
+# -----------------------------------------------------------------------------
+backend/uploads/
+**/uploads/*
+!**/uploads/.gitkeep
+backend/logs/
+**/logs/
+*.log
+
+# -----------------------------------------------------------------------------
+# Local infra (not committed; the user installs certs/ and backups/ on
+# the server)
+# -----------------------------------------------------------------------------
+nginx/certs/
+backups/
+*.sql.gz
+*.sql
+
+# -----------------------------------------------------------------------------
+# OS / editor scratch
+# -----------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.bak
+*.tmp
+*.orig
+
+# -----------------------------------------------------------------------------
+# Test / coverage outputs
+# -----------------------------------------------------------------------------
+coverage/
+.nyc_output/
+junit.xml
+
+# -----------------------------------------------------------------------------
+# Misc
+# -----------------------------------------------------------------------------
+.envrc
+.tool-versions
+.history/
+
+# -----------------------------------------------------------------------------
+# Local one-off scripts (like the in-place REPLACE cleanup script we used
+# during the security audit). The audit migration is committed
+# separately under database/migrations/ so history is preserved.
+# -----------------------------------------------------------------------------
+fix-*.ps1
+fix-*.sh
+*.local
