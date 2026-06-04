@@ -6,16 +6,22 @@ import api from '../utils/api';
 import { formatDate, formatDateTime } from '../utils/dateFormat';
 import { useAsync } from '../hooks/useAsync';
 import { Spinner, ErrorBlock } from '../components/shared/Feedback';
+import Pagination from '../components/shared/Pagination';
 
 export default function ProductRequests() {
   const [showForm, setShowForm] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const { register, handleSubmit, reset } = useForm();
 
-  const { data: requests, loading, error, refresh } = useAsync(
+  const { data: requestsData, loading, error, refresh } = useAsync(
     (signal) => api.get('/product-requests/my', { signal }).then(r => r.data),
     []
   );
+
+  const requests = requestsData;
+  const displayRequests = (requests || []).slice((page - 1) * pageSize, page * pageSize);
 
   const onSubmit = async (data: any) => {
     try {
@@ -124,7 +130,7 @@ export default function ProductRequests() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {requests.map((req: any) => (
+                {displayRequests.map((req: any) => (
                   <tr key={req.id} className="hover:bg-gray-50">
                     <td className="px-3 sm:px-6 py-3 sm:py-4">
                       <div className="font-medium text-sm">{req.item_name}</div>
@@ -184,6 +190,7 @@ export default function ProductRequests() {
           {requests.length === 0 && (
             <div className="text-center py-8 text-gray-500 text-sm">No product requests yet</div>
           )}
+          {requests.length > 0 && <Pagination page={page} pageSize={pageSize} total={requests.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />}
         </div>
       </div>
 

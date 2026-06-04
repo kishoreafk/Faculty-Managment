@@ -1,5 +1,5 @@
 import { pool } from '../config/database.js';
-import * as XLSX from 'xlsx';
+import XLSX from 'xlsx';
 import bcrypt from 'bcryptjs';
 import { AppError } from '../middleware/errorHandler.js';
 import { AuthRequest } from '../middleware/auth.js';

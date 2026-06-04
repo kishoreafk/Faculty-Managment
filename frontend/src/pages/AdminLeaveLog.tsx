@@ -4,10 +4,13 @@ import api from '../utils/api';
 import { formatDate, formatDateTime } from '../utils/dateFormat';
 import { useAsync } from '../hooks/useAsync';
 import { Spinner, ErrorBlock } from '../components/shared/Feedback';
+import Pagination from '../components/shared/Pagination';
 
 export default function AdminLeaveLog() {
   const [selectedLeave, setSelectedLeave] = useState<any>(null);
   const [filter, setFilter] = useState<'ALL' | 'APPROVED' | 'REJECTED'>('ALL');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const { data: processedLeaves, loading, error, refresh } = useAsync<any[]>(
     (signal) => api.get('/leave/pending', { signal }).then(r => {
@@ -30,6 +33,7 @@ export default function AdminLeaveLog() {
   const filteredLeaves = filter === 'ALL' 
     ? allLeaves 
     : allLeaves.filter((l: any) => l.status === filter);
+  const displayLeaves = filteredLeaves.slice((page - 1) * pageSize, page * pageSize);
 
   if (loading) return <Spinner className="min-h-[400px]" />;
   if (error) return <ErrorBlock message={error} onRetry={refresh} />;
@@ -69,14 +73,13 @@ export default function AdminLeaveLog() {
             <h2 className="text-xl font-semibold mb-4">Processed Requests ({filteredLeaves.length})</h2>
             
             <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto">
-              {filteredLeaves.map((leave) => (
+              {displayLeaves.map((leave) => (
                 <motion.div
                   key={leave.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className={'border rounded-lg p-4 cursor-pointer hover:shadow-md transition ' +
-                    (selectedLeave?.id === leave.id ? 'border-blue-500 bg-blue-50' : '') + ' ' +
-                    (leave.status === 'APPROVED' ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500')}
+                    (selectedLeave?.id === leave.id ? 'border-blue-500 bg-blue-50' : '')}
                   onClick={() => viewDetails(leave.id)}
                 >
                   <div className="flex justify-between items-start mb-2">
@@ -84,10 +87,15 @@ export default function AdminLeaveLog() {
                       <h3 className="font-semibold">{leave.faculty_name}</h3>
                       <p className="text-sm text-gray-600">{leave.department} | {leave.designation}</p>
                     </div>
-                    <span className={'text-xs px-2 py-1 rounded font-medium ' +
-                      (leave.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')}>
-                      {leave.status}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
+                        {leave.leave_type}
+                      </span>
+                      <span className={'text-xs px-2 py-1 rounded font-medium ' +
+                       (leave.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')}>
+                       {leave.status}
+                      </span>
+                    </div>
                   </div>
                   
                   <div className="text-sm space-y-1">
@@ -104,6 +112,7 @@ export default function AdminLeaveLog() {
                 </div>
               )}
             </div>
+            <Pagination page={page} pageSize={pageSize} total={filteredLeaves.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
@@ -120,7 +129,7 @@ export default function AdminLeaveLog() {
 
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="font-semibold mb-3 text-blue-600">Faculty Information</h3>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-sm">
                     <div>
                       <span className="text-gray-600">Name:</span>
                       <p className="font-medium">{selectedLeave.faculty_name}</p>
@@ -137,7 +146,7 @@ export default function AdminLeaveLog() {
                       <span className="text-gray-600">Designation:</span>
                       <p className="font-medium">{selectedLeave.designation}</p>
                     </div>
-                    <div className="col-span-2">
+                    <div className="sm:col-span-2">
                       <span className="text-gray-600">Email:</span>
                       <p className="font-medium">{selectedLeave.email}</p>
                     </div>
@@ -151,7 +160,7 @@ export default function AdminLeaveLog() {
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="font-semibold mb-3 text-blue-600">Leave Details</h3>
                   <div className="space-y-3 text-sm">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                       <div>
                         <span className="text-gray-600">Leave Type:</span>
                         <p className="font-medium">{selectedLeave.leave_type}</p>

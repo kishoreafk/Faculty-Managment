@@ -5,6 +5,7 @@ import api from '../utils/api';
 import { formatDateTime } from '../utils/dateFormat';
 import { useAsync } from '../hooks/useAsync';
 import { Spinner, ErrorBlock } from '../components/shared/Feedback';
+import Pagination from '../components/shared/Pagination';
 
 export default function AdminLeaveReview() {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ export default function AdminLeaveReview() {
   const [reviewAction, setReviewAction] = useState<'APPROVED' | 'REJECTED' | null>(null);
   const [reasonText, setReasonText] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const { data: pendingLeaves, loading, error, refresh } = useAsync<any[]>(
     (signal) => api.get('/leave/pending', { signal }).then(r => {
@@ -77,6 +80,7 @@ export default function AdminLeaveReview() {
 
   if (loading) return <Spinner className="min-h-[400px]" />;
   if (error) return <ErrorBlock message={error} onRetry={refresh} />;
+  const displayLeaves = (pendingLeaves || []).slice((page - 1) * pageSize, page * pageSize);
   if (!pendingLeaves) return null;
 
   return (
@@ -98,7 +102,7 @@ export default function AdminLeaveReview() {
             <h2 className="text-xl font-semibold mb-4">Pending Applications ({pendingLeaves.length})</h2>
             
             <div className="space-y-3 max-h-[calc(100vh-200px)] overflow-y-auto">
-              {pendingLeaves.map((leave) => (
+              {displayLeaves.map((leave) => (
                 <motion.div
                   key={leave.id}
                   initial={{ opacity: 0 }}
@@ -140,6 +144,7 @@ export default function AdminLeaveReview() {
                 </div>
               )}
             </div>
+            <Pagination page={page} pageSize={pageSize} total={pendingLeaves ? pendingLeaves.length : 0} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
           </div>
 
           {/* Details Panel */}
@@ -152,7 +157,7 @@ export default function AdminLeaveReview() {
                   {/* Faculty Info */}
                   <div className="bg-gray-50 p-4 rounded-lg mb-4">
                     <h3 className="font-semibold mb-2">Faculty Information</h3>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                       <div><span className="text-gray-600">Name:</span> {selectedLeave.faculty_name}</div>
                       <div><span className="text-gray-600">Employee ID:</span> {selectedLeave.employee_id}</div>
                       <div><span className="text-gray-600">Department:</span> {selectedLeave.department}</div>
@@ -164,7 +169,7 @@ export default function AdminLeaveReview() {
 
                   {/* Leave Details */}
                   <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-sm">
                       <div>
                         <span className="text-gray-600">Leave Type:</span>
                         <p className="font-medium">{selectedLeave.leave_type}</p>

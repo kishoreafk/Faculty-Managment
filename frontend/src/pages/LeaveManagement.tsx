@@ -4,10 +4,13 @@ import api from '../utils/api';
 import LeaveApplicationForm from '../components/LeaveApplicationForm';
 import { useAsync } from '../hooks/useAsync';
 import { Spinner, ErrorBlock } from '../components/shared/Feedback';
+import Pagination from '../components/shared/Pagination';
 
 export default function LeaveManagement() {
   const [showForm, setShowForm] = useState(false);
   const [selectedApp, setSelectedApp] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const { data: balancesData, loading: loadingData, error: errorData, refresh: refreshData } = useAsync(
     (signal) => Promise.all([
@@ -29,6 +32,7 @@ export default function LeaveManagement() {
 
   const balances = balancesData?.balances || [];
   const applications = balancesData?.applications || [];
+  const displayApplications = applications.slice((page - 1) * pageSize, page * pageSize);
 
   if (loadingData || loadingProfile || loadingAdjustments) return <Spinner className="min-h-[400px]" />;
   if (errorData) return <ErrorBlock message={errorData} onRetry={refreshData} />;
@@ -100,7 +104,7 @@ export default function LeaveManagement() {
           </div>
         )}
 
-        {adjustments.length > 0 && (
+        {adjustments && adjustments.length > 0 && (
           <div className="bg-white p-6 rounded-lg shadow mb-8">
             <h2 className="text-xl font-semibold mb-4">Pending Adjustments (Assigned to You)</h2>
             <div className="space-y-4">
@@ -137,7 +141,7 @@ export default function LeaveManagement() {
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
           <h2 className="text-lg sm:text-xl font-semibold mb-4">My Applications</h2>
           <div className="space-y-4">
-            {applications.map((app: any) => (
+            {displayApplications.map((app: any) => (
               <div key={app.id} className="border rounded-lg p-4 hover:shadow-md transition">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
@@ -207,6 +211,7 @@ export default function LeaveManagement() {
           {applications.length === 0 && (
             <div className="text-center py-8 text-gray-500 text-sm">No applications yet</div>
           )}
+          {applications.length > 0 && <Pagination page={page} pageSize={pageSize} total={applications.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />}
         </div>
 
         {selectedApp && (

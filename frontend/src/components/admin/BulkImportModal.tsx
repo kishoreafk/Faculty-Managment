@@ -69,7 +69,7 @@ export default function BulkImportModal({ show, onClose, onSuccess }: Props) {
           message: d.error || 'Import failed',
           totalRows: d.totalRows || 0,
           successCount: d.successCount || 0,
-          failedCount: d.failedCount || d.errors.length,
+          failedCount: d.failedCount ?? (Array.isArray(d.errors) ? d.errors.length : 0),
           defaultPassword: d.defaultPassword || 'admin123',
           insertedUsers: d.insertedUsers || [],
           errors: d.errors
@@ -135,7 +135,7 @@ export default function BulkImportModal({ show, onClose, onSuccess }: Props) {
                 </div>
               </div>
 
-              {importResult.insertedUsers.length > 0 && (
+              {importResult.insertedUsers && importResult.insertedUsers.length > 0 && (
                 <div>
                   <h3 className="text-sm font-semibold mb-2">Imported Users</h3>
                   <div className="max-h-48 overflow-y-auto border rounded">
@@ -194,7 +194,7 @@ export default function BulkImportModal({ show, onClose, onSuccess }: Props) {
                 </div>
               )}
 
-              {importResult.errors.length > 0 && (
+              {importResult.errors && importResult.errors.length > 0 && (
                 <div>
                   <h3 className="text-sm font-semibold text-red-700 mb-2">Errors</h3>
                   <div className="max-h-48 overflow-y-auto border border-red-200 rounded">

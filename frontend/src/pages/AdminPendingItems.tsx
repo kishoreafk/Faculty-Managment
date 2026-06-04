@@ -4,11 +4,14 @@ import api from '../utils/api';
 import { formatDateTime } from '../utils/dateFormat';
 import { useAsync } from '../hooks/useAsync';
 import { Spinner, ErrorBlock } from '../components/shared/Feedback';
+import Pagination from '../components/shared/Pagination';
 
 export default function AdminPendingItems() {
   const [tab, setTab] = useState<'leave' | 'product'>('leave');
   const [modal, setModal] = useState<{ id: number; action: 'APPROVED' | 'REJECTED'; type: 'leave' | 'product' } | null>(null);
   const [reasonInput, setReasonInput] = useState('');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const { data: currentData, loading, error, refresh } = useAsync<any[]>(
     (signal) => {
@@ -20,6 +23,8 @@ export default function AdminPendingItems() {
 
   const leaveApps: any[] = tab === 'leave' ? (currentData || []) : [];
   const productReqs: any[] = tab === 'product' ? (currentData || []) : [];
+  const displayLeaveApps = leaveApps.slice((page - 1) * pageSize, page * pageSize);
+  const displayProductReqs = productReqs.slice((page - 1) * pageSize, page * pageSize);
 
   const submitReview = async () => {
     if (!modal) return;
@@ -90,7 +95,7 @@ export default function AdminPendingItems() {
                   </tr>
                 </thead>
                 <tbody>
-                  {productReqs.map((req) => (
+                  {displayProductReqs.map((req) => (
                     <tr key={req.id}>
                       <td>
                         <div>
@@ -135,6 +140,7 @@ export default function AdminPendingItems() {
                 <p className="text-secondary-500">No pending product requests</p>
               </div>
             )}
+            {productReqs.length > 0 && <Pagination page={page} pageSize={pageSize} total={productReqs.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />}
           </div>
         )}
 
@@ -153,7 +159,7 @@ export default function AdminPendingItems() {
                   </tr>
                 </thead>
                 <tbody>
-                  {leaveApps.map((app) => (
+                  {displayLeaveApps.map((app) => (
                     <tr key={app.id}>
                       <td>
                         <div>
@@ -206,6 +212,7 @@ export default function AdminPendingItems() {
                 <p className="text-secondary-500">No pending leave applications</p>
               </div>
             )}
+            {leaveApps.length > 0 && <Pagination page={page} pageSize={pageSize} total={leaveApps.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />}
           </div>
         )}
 

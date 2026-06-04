@@ -40,12 +40,12 @@ export default function AdminLogs() {
   if (!logs) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Admin Activity Logs</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Admin Activity Logs</h1>
 
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">Resource Type</label>
               <select
@@ -98,40 +98,40 @@ export default function AdminLogs() {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-sm font-medium">Timestamp</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium">Admin</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium">Action</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium">Resource</th>
-                      <th className="px-6 py-3 text-left text-sm font-medium">Details</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {logs.items.map((log: any) => (
-                      <motion.tr
-                        key={log.id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                      >
-                        <td className="px-6 py-4 text-sm">
-                          {formatDateTime(log.created_at)}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="font-medium">{log.admin_name}</div>
-                          <div className="text-sm text-gray-500">{log.admin_email}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`font-medium ${getActionColor(log.action_type)}`}>
-                            {log.action_type}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm">
-                          <div>{log.resource_type}</div>
-                          <div className="text-gray-500">ID: {log.resource_id}</div>
-                        </td>
-                        <td className="px-6 py-4">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium">Timestamp</th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium">Admin</th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium">Action</th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium hidden md:table-cell">Resource</th>
+                        <th className="px-3 sm:px-6 py-3 text-left text-xs sm:text-sm font-medium">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {logs.items.map((log: any) => (
+                        <motion.tr
+                          key={log.id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                        >
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm">
+                            {formatDateTime(log.created_at)}
+                          </td>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4">
+                            <div className="font-medium text-sm">{log.admin_name}</div>
+                            <div className="text-xs text-gray-500">{log.admin_email}</div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4">
+                            <span className={`font-medium text-xs sm:text-sm ${getActionColor(log.action_type)}`}>
+                              {log.action_type}
+                            </span>
+                          </td>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm hidden md:table-cell">
+                            <div>{log.resource_type}</div>
+                            <div className="text-gray-500">ID: {log.resource_id}</div>
+                          </td>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4">
                           {(log.resource_type === 'leave_application' || log.resource_type === 'product_request') && log.resource_id && (
                             <button
                               onClick={() => {
@@ -153,23 +153,23 @@ export default function AdminLogs() {
                 </table>
               </div>
 
-              <div className="px-6 py-4 border-t flex justify-between items-center">
-                <div className="text-sm text-gray-600">
+              <div className="px-3 sm:px-6 py-4 border-t flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div className="text-xs sm:text-sm text-gray-600">
                   Total: {logs.total} logs
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                   <button
                     onClick={() => setFilters({ ...filters, page: Math.max(1, filters.page - 1) })}
                     disabled={filters.page === 1}
-                    className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                    className="px-3 sm:px-4 py-2 border rounded-lg disabled:opacity-50 text-sm"
                   >
                     Previous
                   </button>
-                  <span className="px-4 py-2">Page {filters.page}</span>
+                  <span className="px-2 sm:px-4 py-2 text-sm">Page {filters.page}</span>
                   <button
                     onClick={() => setFilters({ ...filters, page: filters.page + 1 })}
                     disabled={filters.page * filters.pageSize >= logs.total}
-                    className="px-4 py-2 border rounded-lg disabled:opacity-50"
+                    className="px-3 sm:px-4 py-2 border rounded-lg disabled:opacity-50 text-sm"
                   >
                     Next
                   </button>

@@ -4,10 +4,13 @@ import api from '../utils/api';
 import { formatDateTime } from '../utils/dateFormat';
 import { useAsync } from '../hooks/useAsync';
 import { Spinner, ErrorBlock } from '../components/shared/Feedback';
+import Pagination from '../components/shared/Pagination';
 
 export default function AdminProductLog() {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [filter, setFilter] = useState<'ALL' | 'APPROVED' | 'REJECTED'>('ALL');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const { data: processedRequests, loading, error, refresh } = useAsync<any[]>(
     (signal) => api.get('/admin/product-requests', { signal }).then(r => {
@@ -30,6 +33,7 @@ export default function AdminProductLog() {
   const filteredRequests = filter === 'ALL' 
     ? allRequests 
     : allRequests.filter((r: any) => r.status === filter);
+  const displayRequests = filteredRequests.slice((page - 1) * pageSize, page * pageSize);
 
   if (loading) return <Spinner className="min-h-[400px]" />;
   if (error) return <ErrorBlock message={error} onRetry={refresh} />;
@@ -69,20 +73,19 @@ export default function AdminProductLog() {
             <h2 className="text-xl font-semibold mb-4">Processed Requests ({filteredRequests.length})</h2>
             
             <div className="space-y-3 max-h-[calc(100vh-250px)] overflow-y-auto">
-              {filteredRequests.map((req) => (
+              {displayRequests.map((req) => (
                 <motion.div
                   key={req.id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className={'border rounded-lg p-4 cursor-pointer hover:shadow-md transition ' +
-                    (selectedRequest?.id === req.id ? 'border-blue-500 bg-blue-50' : '') + ' ' +
-                    (req.status === 'APPROVED' ? 'border-l-4 border-l-green-500' : 'border-l-4 border-l-red-500')}
+                    (selectedRequest?.id === req.id ? 'border-blue-500 bg-blue-50' : '')}
                   onClick={() => viewDetails(req.id)}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-semibold">{req.item_name}</h3>
-                      <p className="text-sm text-gray-600">{req.faculty_name}</p>
+                      <h3 className="font-semibold">{req.faculty_name}</h3>
+                      <p className="text-sm text-gray-600">{req.faculty_email}</p>
                     </div>
                     <span className={'text-xs px-2 py-1 rounded font-medium ' +
                       (req.status === 'APPROVED' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800')}>
@@ -103,6 +106,7 @@ export default function AdminProductLog() {
                 </div>
               )}
             </div>
+            <Pagination page={page} pageSize={pageSize} total={filteredRequests.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
@@ -119,7 +123,7 @@ export default function AdminProductLog() {
 
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="font-semibold mb-3 text-blue-600">Faculty Information</h3>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-sm">
                     <div>
                       <span className="text-gray-600">Name:</span>
                       <p className="font-medium">{selectedRequest.faculty_name}</p>
@@ -136,7 +140,7 @@ export default function AdminProductLog() {
                       <span className="text-gray-600">Designation:</span>
                       <p className="font-medium">{selectedRequest.designation}</p>
                     </div>
-                    <div className="col-span-2">
+                    <div className="sm:col-span-2">
                       <span className="text-gray-600">Email:</span>
                       <p className="font-medium">{selectedRequest.email}</p>
                     </div>

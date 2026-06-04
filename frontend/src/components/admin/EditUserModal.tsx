@@ -15,11 +15,13 @@ export default function EditUserModal({ show, user, onClose, onSaved }: Props) {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     name: '', email: '', department: '', designation: '',
-    faculty_type_id: '', gender: '', experience_years: '', qualification: '', role: ''
+    faculty_type_id: '', gender: '', experience_years: '', qualification: '',
+    doj: '', role: ''
   });
 
   useEffect(() => {
     if (user) {
+      const dojVal = user.doj ? user.doj.split('T')[0] : '';
       setForm({
         name: user.name || '',
         email: user.email || '',
@@ -29,6 +31,7 @@ export default function EditUserModal({ show, user, onClose, onSaved }: Props) {
         gender: user.gender || '',
         experience_years: String(user.experience_years || 0),
         qualification: user.qualification || '',
+        doj: dojVal,
         role: user.role_name || ''
       });
     }
@@ -45,17 +48,28 @@ export default function EditUserModal({ show, user, onClose, onSaved }: Props) {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await usersApi.update(user.id, {
-        ...form,
-        faculty_type_id: form.faculty_type_id ? Number(form.faculty_type_id) : undefined,
-        experience_years: form.experience_years ? Number(form.experience_years) : undefined,
-        force_update: user.imported ? true : undefined
-      });
+      const skipFields = new Set(['role']);
+      const payload: Record<string, any> = {};
+      for (const [key, val] of Object.entries(form)) {
+        if (skipFields.has(key)) continue;
+        if (val !== '' && val !== undefined && val !== null) {
+          if (key === 'faculty_type_id') payload[key] = Number(val);
+          else if (key === 'experience_years') payload[key] = Number(val);
+          else payload[key] = val;
+        }
+      }
+      if (user.imported) payload.force_update = true;
+      await usersApi.update(user.id, payload);
       alert('User updated successfully');
       onSaved();
       onClose();
     } catch (e: any) {
-      alert(e.response?.data?.error || 'Failed to update user');
+      const data = e.response?.data;
+      if (data?.details) {
+        alert(`Validation failed:\n${data.details.map((d: any) => `  • ${d.path}: ${d.message}`).join('\n')}`);
+      } else {
+        alert(data?.error || 'Failed to update user');
+      }
     } finally {
       setSaving(false);
     }
@@ -64,8 +78,9 @@ export default function EditUserModal({ show, user, onClose, onSaved }: Props) {
   const fields: { label: string; key: keyof typeof form; type?: string }[] = [
     { label: 'Name', key: 'name' }, { label: 'Email', key: 'email', type: 'email' },
     { label: 'Department', key: 'department' }, { label: 'Designation', key: 'designation' },
-    { label: 'Gender', key: 'gender' }, { label: 'Experience Years', key: 'experience_years', type: 'number' },
-    { label: 'Qualification', key: 'qualification' }, { label: 'Role', key: 'role' },
+    { label: 'Experience Years', key: 'experience_years', type: 'number' },
+    { label: 'Qualification', key: 'qualification' },
+    { label: 'Date of Joining', key: 'doj', type: 'date' },
   ];
 
   return (
@@ -95,6 +110,21 @@ export default function EditUserModal({ show, user, onClose, onSaved }: Props) {
               <option value="">Select...</option>
               {facultyTypes.map((ft: any) => <option key={ft.id} value={ft.id}>{ft.name}</option>)}
             </select>
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">Gender</span>
+            <select value={form.gender} onChange={(e) => setForm(prev => ({ ...prev, gender: e.target.value }))}
+              className="mt-1 block w-full px-3 py-2 border rounded text-sm">
+              <option value="">Select...</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-sm font-medium text-gray-700">Role</span>
+            <input type="text" value={form.role} disabled
+              className="mt-1 block w-full px-3 py-2 border rounded text-sm bg-gray-100" />
           </label>
         </div>
         <div className="flex gap-2 p-5 border-t bg-gray-50">

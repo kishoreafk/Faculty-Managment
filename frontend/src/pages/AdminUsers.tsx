@@ -5,9 +5,11 @@ import { usersApi } from '../api/users';
 import BulkImportModal from '../components/admin/BulkImportModal';
 import { useAsync } from '../hooks/useAsync';
 import { Spinner, ErrorBlock } from '../components/shared/Feedback';
+import Pagination from '../components/shared/Pagination';
 
 export default function AdminUsers() {
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('active');
   const [role, setRole] = useState('');
@@ -15,8 +17,8 @@ export default function AdminUsers() {
   const [showImportModal, setShowImportModal] = useState(false);
 
   const { data: usersData, loading, error, refresh } = useAsync(
-    () => usersApi.getAll({ query, status, role, page, pageSize: 25 }).then(r => r.data),
-    [page, status, role]
+    () => usersApi.getAll({ query, status, role, page, pageSize }).then(r => r.data),
+    [page, pageSize, status, role, query]
   );
 
   const users = usersData?.items || [];
@@ -209,14 +211,7 @@ export default function AdminUsers() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div className="text-sm text-gray-600">Showing {users.length} of {total} users</div>
-            <div className="flex gap-2">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-3 py-2 border rounded disabled:opacity-50 text-sm">Previous</button>
-              <span className="px-3 py-2 text-sm">Page {page}</span>
-              <button onClick={() => setPage(p => p + 1)} disabled={users.length < 25} className="px-3 py-2 border rounded disabled:opacity-50 text-sm">Next</button>
-            </div>
-          </div>
+          <Pagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />
         </>
       )}
 

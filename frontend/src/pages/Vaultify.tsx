@@ -3,10 +3,13 @@ import api from '../utils/api';
 import { formatDateTime } from '../utils/dateFormat';
 import { useAsync } from '../hooks/useAsync';
 import { Spinner, ErrorBlock } from '../components/shared/Feedback';
+import Pagination from '../components/shared/Pagination';
 
 export default function Vaultify() {
   const [uploading, setUploading] = useState(false);
   const [showUpload, setShowUpload] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -41,9 +44,7 @@ export default function Vaultify() {
     data.append('visibility', formData.visibility);
 
     try {
-      await api.post('/vaultify/upload', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/vaultify/upload', data);
       alert('File uploaded successfully');
       setShowUpload(false);
       setFormData({ title: '', description: '', category_id: '', visibility: 'PRIVATE', file: null });
@@ -80,24 +81,26 @@ export default function Vaultify() {
     }
   };
 
+  const displayFiles = (files || []).slice((page - 1) * pageSize, page * pageSize);
+
   if (loadingFiles && loadingCategories) return <Spinner className="min-h-[400px]" />;
   if (errorFiles) return <ErrorBlock message={errorFiles} onRetry={refreshFiles} />;
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Vaultify - Document Safe</h1>
+    <div className="max-w-7xl mx-auto p-3 sm:p-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+          <h1 className="text-xl sm:text-3xl font-bold">Vaultify - Document Safe</h1>
           <button
             onClick={() => setShowUpload(!showUpload)}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 self-stretch sm:self-auto text-sm sm:text-base"
           >
             {showUpload ? 'Cancel' : 'Upload Document'}
           </button>
         </div>
 
         {showUpload && (
-          <div className="bg-white p-6 rounded-lg shadow mb-6">
-            <h2 className="text-xl font-semibold mb-4">Upload New Document</h2>
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">Upload New Document</h2>
             <form onSubmit={handleUpload} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Title *</label>
@@ -176,48 +179,50 @@ export default function Vaultify() {
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Title</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Category</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">File</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Size</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Uploaded</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium">Actions</th>
+                    <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium">Title</th>
+                    <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium hidden sm:table-cell">Category</th>
+                    <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium hidden sm:table-cell">File</th>
+                    <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium hidden md:table-cell">Size</th>
+                    <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium hidden md:table-cell">Uploaded</th>
+                    <th className="px-2 sm:px-4 py-3 text-left text-xs sm:text-sm font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {files.map(file => (
+                  {displayFiles.map(file => (
                     <tr key={file.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <div className="font-medium">{file.title}</div>
+                      <td className="px-2 sm:px-4 py-3">
+                        <div className="font-medium text-sm">{file.title}</div>
                         {file.description && (
-                          <div className="text-sm text-gray-500">{file.description}</div>
+                          <div className="text-xs text-gray-500">{file.description}</div>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-sm">{file.category_name || '-'}</td>
-                      <td className="px-4 py-3 text-sm">{file.original_filename}</td>
-                      <td className="px-4 py-3 text-sm">{file.file_size_kb} KB</td>
-                      <td className="px-4 py-3 text-sm">{formatDateTime(file.uploaded_at)}</td>
-                      <td className="px-4 py-3 text-sm space-x-2">
-                        {(file.mime_type.includes('pdf') || file.mime_type.includes('image')) && (
+                      <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm hidden sm:table-cell">{file.category_name || '-'}</td>
+                      <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm hidden sm:table-cell">{file.original_filename}</td>
+                      <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm hidden md:table-cell">{file.file_size_kb} KB</td>
+                      <td className="px-2 sm:px-4 py-3 text-xs sm:text-sm hidden md:table-cell">{formatDateTime(file.uploaded_at)}</td>
+                      <td className="px-2 sm:px-4 py-3">
+                        <div className="flex flex-wrap gap-1.5">
+                          {(file.mime_type.includes('pdf') || file.mime_type.includes('image')) && (
+                            <button
+                              onClick={() => handlePreview(file.id)}
+                              className="text-blue-600 hover:underline text-xs"
+                            >
+                              Preview
+                            </button>
+                          )}
                           <button
-                            onClick={() => handlePreview(file.id)}
-                            className="text-blue-600 hover:underline"
+                            onClick={() => handleDownload(file.id)}
+                            className="text-green-600 hover:underline text-xs"
                           >
-                            Preview
+                            Download
                           </button>
-                        )}
-                        <button
-                          onClick={() => handleDownload(file.id)}
-                          className="text-green-600 hover:underline"
-                        >
-                          Download
-                        </button>
-                        <button
-                          onClick={() => handleDelete(file.id, file.title)}
-                          className="text-red-600 hover:underline"
-                        >
-                          Delete
-                        </button>
+                          <button
+                            onClick={() => handleDelete(file.id, file.title)}
+                            className="text-red-600 hover:underline text-xs"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -225,6 +230,7 @@ export default function Vaultify() {
               </table>
             </div>
           )}
+          {files && files.length > 0 && <Pagination page={page} pageSize={pageSize} total={files.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />}
         </div>
       </div>
   );

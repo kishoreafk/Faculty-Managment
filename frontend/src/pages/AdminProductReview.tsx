@@ -6,6 +6,7 @@ import api from '../utils/api';
 import { formatDate, formatDateTime } from '../utils/dateFormat';
 import { useAsync } from '../hooks/useAsync';
 import { Spinner, ErrorBlock } from '../components/shared/Feedback';
+import Pagination from '../components/shared/Pagination';
 
 export default function AdminProductReview() {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ export default function AdminProductReview() {
   const [actionLoading, setActionLoading] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [reviewAction, setReviewAction] = useState<'APPROVED' | 'REJECTED' | null>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   const { data: requests, loading, error, refresh } = useAsync<any[]>(
     (signal) => api.get('/admin/product-requests', { signal }).then(r => {
@@ -54,6 +57,8 @@ export default function AdminProductReview() {
     setActionLoading(false);
   };
 
+  const displayRequests = (requests || []).slice((page - 1) * pageSize, page * pageSize);
+
   if (loading) return <Spinner className="min-h-[400px]" />;
   if (error) return <ErrorBlock message={error} onRetry={refresh} />;
   if (!requests) return null;
@@ -77,7 +82,7 @@ export default function AdminProductReview() {
           </div>
         ) : (
           <div className="grid gap-4">
-            {requests.map((req: any, idx) => (
+            {displayRequests.map((req: any, idx) => (
               <motion.div
                 key={req.id}
                 initial={{ opacity: 0, x: -20 }}
@@ -122,6 +127,7 @@ export default function AdminProductReview() {
             ))}
           </div>
         )}
+        {requests && requests.length > 0 && <Pagination page={page} pageSize={pageSize} total={requests.length} onPageChange={setPage} onPageSizeChange={(s) => { setPageSize(s); setPage(1); }} />}
 
         {selectedRequest && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

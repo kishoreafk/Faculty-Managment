@@ -61,9 +61,9 @@ export default function AdminApprovals() {
   if (!pending) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Pending Faculty Approvals</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Pending Faculty Approvals</h1>
         
         {pending.length === 0 ? (
           <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
@@ -77,12 +77,12 @@ export default function AdminApprovals() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white p-6 rounded-lg shadow"
+                className="bg-white p-4 sm:p-6 rounded-lg shadow"
               >
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-semibold">{faculty.name}</h3>
-                    <div className="grid grid-cols-2 gap-4 mt-3 text-sm">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                  <div className="flex-1 w-full sm:w-auto">
+                    <h3 className="text-lg sm:text-xl font-semibold">{faculty.name}</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mt-3 text-sm">
                       <div><span className="text-gray-500">Employee ID:</span> {faculty.employee_id}</div>
                       <div><span className="text-gray-500">Email:</span> {faculty.email}</div>
                       <div><span className="text-gray-500">Department:</span> {faculty.department}</div>
@@ -95,7 +95,7 @@ export default function AdminApprovals() {
                       <select
                         value={selectedRole[faculty.id] || 'FACULTY'}
                         onChange={(e) => setSelectedRole({...selectedRole, [faculty.id]: e.target.value})}
-                        className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="w-full sm:w-auto px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                       >
                         <option value="FACULTY">FACULTY</option>
                         <option value="HOD">HOD</option>
@@ -103,11 +103,11 @@ export default function AdminApprovals() {
                       </select>
                     </div>
                   </div>
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex flex-row sm:flex-col gap-2 w-full sm:w-auto">
                     <button
                       onClick={() => handleApprove(faculty.id)}
                       disabled={actionLoading}
-                      className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                      className="flex-1 sm:flex-none items-center justify-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 inline-flex"
                     >
                       <CheckCircle size={18} />
                       Approve
@@ -115,7 +115,7 @@ export default function AdminApprovals() {
                     <button
                       onClick={() => setShowRejectModal(faculty.id)}
                       disabled={actionLoading}
-                      className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                      className="flex-1 sm:flex-none items-center justify-center gap-2 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 disabled:opacity-50 inline-flex"
                     >
                       <XCircle size={18} />
                       Reject

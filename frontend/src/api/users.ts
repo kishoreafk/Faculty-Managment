@@ -62,7 +62,6 @@ export const usersApi = {
     const formData = new FormData();
     formData.append('file', file);
     return api.post<ImportResult>('/admin/users/bulk-import', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
       timeout: 120000
     });
   },

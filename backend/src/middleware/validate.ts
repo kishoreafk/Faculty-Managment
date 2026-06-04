@@ -15,6 +15,7 @@ export const validate = (schema: ZodSchema, source: ValidationTarget = 'body') =
           path: i.path.join('.'),
           message: i.message
         }));
+        console.error('[DEBUG ERROR] Validation failed for', req.method, req.originalUrl, '- body:', JSON.stringify(req[source]), '- issues:', JSON.stringify(details));
         _res.status(400).json({
           error: 'Validation failed',
           code: 'VALIDATION_ERROR',
