@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { pool } from '../config/database.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { requireEnv } from '../config/env.js';

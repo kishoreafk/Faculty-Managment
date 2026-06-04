@@ -18,7 +18,7 @@ const { mockConnection, mockPool, mockFindById } = vi.hoisted(() => {
 });
 
 vi.mock('../../config/database.js', () => ({ pool: mockPool }));
-vi.mock('bcrypt', () => ({ default: { hash: vi.fn(() => '$2b$10$hashed') } }));
+vi.mock('bcryptjs', () => ({ default: { hash: vi.fn(() => '$2b$10$hashed') } }));
 vi.mock('../../utils/spDiagnostics.js', () => ({
   parseSpDiagnostic: vi.fn(() => ({ status: 'OK', message: 'Leaves assigned' })),
 }));

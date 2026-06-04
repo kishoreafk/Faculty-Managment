@@ -1283,7 +1283,7 @@ DELIMITER ;
 -- VIEWS FOR ANALYTICS
 -- ============================================
 
-CREATE VIEW v_leave_summary AS
+CREATE OR REPLACE VIEW v_leave_summary AS
 SELECT 
   f.department,
   lt.name AS leave_type,
@@ -1298,7 +1298,7 @@ LEFT JOIN leave_applications la ON la.faculty_id = f.id AND la.leave_type_id = l
 WHERE f.active = TRUE
 GROUP BY f.department, lt.name;
 
-CREATE VIEW v_faculty_workload AS
+CREATE OR REPLACE VIEW v_faculty_workload AS
 SELECT 
   f.id,
   f.name,
@@ -1312,7 +1312,7 @@ LEFT JOIN courses c ON t.course_id = c.id
 WHERE f.active = TRUE
 GROUP BY f.id, f.name, f.department;
 
-CREATE VIEW v_pending_approvals AS
+CREATE OR REPLACE VIEW v_pending_approvals AS
 SELECT 
   'LEAVE' AS type,
   la.id,
@@ -1352,7 +1352,7 @@ SELECT
 FROM faculty f
 WHERE f.approved = FALSE AND f.active = TRUE;
 
-CREATE VIEW v_research_stats AS
+CREATE OR REPLACE VIEW v_research_stats AS
 SELECT 
   f.id,
   f.name,
@@ -1366,7 +1366,7 @@ LEFT JOIN research_projects rp ON f.id = rp.faculty_id
 WHERE f.active = TRUE
 GROUP BY f.id, f.name, f.department;
 
-CREATE VIEW v_faculty_leave_availability AS
+CREATE OR REPLACE VIEW v_faculty_leave_availability AS
 SELECT 
   f.id AS faculty_id,
   f.name AS faculty_name,

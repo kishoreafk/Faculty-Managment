@@ -27,7 +27,7 @@
 import './../config/loadEnv.js';
 import readline from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { pool } from './../config/database.js';
 import { requireEnv } from './../config/env.js';
 
@@ -51,6 +51,13 @@ async function main() {
   requireEnv('DB_PASSWORD');
   requireEnv('DB_NAME');
   requireEnv('DB_PORT');
+
+  const NODE_MAJOR_VERSION = parseInt(process.version.slice(1).split('.')[0], 10);
+  if (NODE_MAJOR_VERSION < 18) {
+    // eslint-disable-next-line no-console
+    console.error(`[ERROR] Node.js 18+ is required (detected ${process.version}). Please upgrade Node.js and try again.`);
+    process.exit(1);
+  }
 
   // eslint-disable-next-line no-console
   console.log('\n=== Faculty Management — First-run SUPER_ADMIN setup ===\n');

@@ -149,7 +149,7 @@ export const updateCredentials = asyncHandler(async (req: AuthRequest, res: Resp
   if (!user) throw new AppError(404, 'NOT_FOUND', 'User not found');
 
   if (password) {
-    const bcrypt = await import('bcrypt');
+    const bcrypt = await import('bcryptjs');
     const passwordHash = await bcrypt.hash(password, 10);
     await facultyRepository.updateCredentials(Number(id), passwordHash);
   } else if (forceReset) {

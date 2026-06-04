@@ -1,6 +1,6 @@
 import { pool } from '../config/database.js';
 import * as XLSX from 'xlsx';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { AppError } from '../middleware/errorHandler.js';
 import { AuthRequest } from '../middleware/auth.js';
 import { isValidEmail } from '../utils/validation.js';

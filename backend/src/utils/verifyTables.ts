@@ -14,7 +14,8 @@ export const verifyTables = async () => {
   try {
     for (const table of requiredTables) {
       const [rows] = await pool.execute<RowDataPacket[]>(
-        `SHOW TABLES LIKE '${table}'`
+        'SHOW TABLES LIKE ?',
+        [table]
       );
       
       if (rows.length === 0) {
